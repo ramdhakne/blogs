@@ -1,0 +1,118 @@
+apiVersion: couchbase.com/v1
+kind: CouchbaseCluster
+metadata:
+  name: cb-gke-demo
+spec:
+  baseImage: couchbase/server
+  version: enterprise-6.0.1
+  authSecret: cb-k8s-demo-auth 
+  tls:
+    static:
+      member:
+        serverSecret: couchbase-server-tls
+      operatorSecret: couchbase-operator-tls
+  exposeAdminConsole: true
+  adminConsoleServices:
+    - data
+  exposedFeatures:
+    - xdcr
+  cluster:
+    dataServiceMemoryQuota: 1024
+    indexServiceMemoryQuota: 1024
+    searchServiceMemoryQuota: 1024
+    eventingServiceMemoryQuota: 1024
+    analyticsServiceMemoryQuota: 1024
+    indexStorageSetting: plasma
+    autoFailoverTimeout: 10
+    autoFailoverMaxCount: 3
+    autoFailoverOnDataDiskIssues: true
+    autoFailoverOnDataDiskIssuesTimePeriod: 120
+    autoFailoverServerGroup: false
+  buckets:
+    - name: tweets 
+      type: couchbase
+      memoryQuota: 128
+      replicas: 2
+      ioPriority: high
+      evictionPolicy: valueOnly
+      conflictResolution: seqno
+      enableFlush: true
+      enableIndexReplica: false
+  servers:
+    - name: data-nodes-east1b 
+      size: 2 
+      services:
+        - data
+      serverGroups:
+       - us-east1-b
+      pod:
+        volumeMounts:
+          default: pvc-us-east1-b # /opt/couchbase/var/lib/couchbase
+          data:  pvc-us-east1-b     # /mnt/data
+    - name: data-nodes-east1d
+      size: 2 
+      services:
+        - data
+      serverGroups:
+       - us-east1-d
+      pod:
+        volumeMounts:
+          default: pvc-us-east1-d   # /opt/couchbase/var/lib/couchbase
+          data: pvc-us-east1-d     # /mnt/data
+    - name: data-nodes-east1c
+      size: 2
+      services:
+        - data
+      serverGroups:
+       - us-east1-c
+      pod:
+        volumeMounts:
+          default: pvc-us-east1-c   # /opt/couchbase/var/lib/couchbase
+          data: pvc-us-east1-c     # /mnt/data
+    - name: query-nodes-east1b
+      size: 1 
+      services:
+        - query
+        - index
+      serverGroups:
+       - us-east1-b
+      pod:
+        volumeMounts:
+          default: pvc-us-east1-b   # /opt/couchbase/var/lib/couchbase
+          index: pvc-us-east1-b     # /mnt/index
+    - name: anal-west-2c
+      size: 1
+      services:
+        - query
+        - index
+      serverGroups:
+       - us-east1-d
+      pod:
+        volumeMounts:
+          default: pvc-us-east1-d   # /opt/couchbase/var/lib/couchbase
+          index: pvc-us-east1-d     # /mnt/index
+  securityContext:
+    fsGroup: 1000
+  disableBucketManagement: true
+  volumeClaimTemplates:
+    - metadata:
+        name: pvc-us-east1-b
+      spec:
+        storageClassName: "sc-us-east1-b"
+        resources:
+          requests:
+            storage: 5Gi
+    - metadata:
+        name: pvc-us-east1-c
+      spec:
+        storageClassName: "sc-us-east1-c"
+        resources:
+          requests:
+            storage: 5Gi
+    - metadata:
+        name: pvc-us-east1-d
+      spec:
+        storageClassName: "sc-us-east1-d"
+        resources:
+          requests:
+            storage: 5Gi

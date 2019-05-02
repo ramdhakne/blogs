@@ -1,0 +1,37 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  labels:
+    k8s-addon: storage-aws.addons.k8s.io
+  name: sc-us-east1-b
+parameters:
+  type: pd-standard
+  zone: us-east1-b
+provisioner: kubernetes.io/gce-pd
+reclaimPolicy: Delete
+
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  labels:
+    k8s-addon: storage-aws.addons.k8s.io
+  name: sc-us-east1-c
+parameters:
+  type: pd-standard
+  zone: us-east1-c
+provisioner: kubernetes.io/gce-pd
+reclaimPolicy: Delete
+
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  labels:
+    k8s-addon: storage-aws.addons.k8s.io
+  name: sc-us-east1-d
+parameters:
+  type: pd-standard
+  zone: us-east1-d
+provisioner: kubernetes.io/gce-pd
+reclaimPolicy: Delete
