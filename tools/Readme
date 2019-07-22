@@ -1,0 +1,17 @@
+Usage:
+  python extract_passwds.py --username Administrator --password <password> --file userssbkp.log --backup --cluster localhost:8091
+  
+  Sample output captured in userssbkp.log:
+  
+  $ head userssbkp.log
+[
+  {
+    "id": "default",
+    "domain": "local",
+    "roles": [
+      {
+        "role": "admin"
+      }
+    ],
+    "password_change_date": "2019-05-05T23:21:23.000Z"
+    
