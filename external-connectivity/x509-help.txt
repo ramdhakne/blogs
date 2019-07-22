@@ -1,0 +1,85 @@
+$ git clone http://github.com/OpenVPN/easy-rsa
+Cloning into 'easy-rsa'...
+warning: redirecting to https://github.com/OpenVPN/easy-rsa/
+remote: Enumerating objects: 53, done.
+remote: Counting objects: 100% (53/53), done.
+remote: Compressing objects: 100% (37/37), done.
+remote: Total 1313 (delta 17), reused 44 (delta 16), pack-reused 1260
+Receiving objects: 100% (1313/1313), 5.53 MiB | 2.12 MiB/s, done.
+Resolving deltas: 100% (594/594), done.
+
+$ cd easy-rsa/easyrsa3
+
+$ ./easyrsa init-pki
+
+  init-pki complete; you may now create a CA or requests.
+  Your newly created PKI dir is: /Users/ram.dhakne/Documents/work/k8s/gcloud/easy-rsa/easyrsa3/pki
+
+
+$ ./easyrsa build-ca
+
+Using SSL: openssl OpenSSL 1.0.2p  14 Aug 2018
+
+Enter New CA Key Passphrase:
+Re-Enter New CA Key Passphrase:
+Generating RSA private key, 2048 bit long modulus
+.....................................+++++
+..................................................................................+++++
+e is 65537 (0x10001)
+You are about to be asked to enter information that will be incorporated
+into your certificate request.
+What you are about to enter is what is called a Distinguished Name or a DN.
+There are quite a few fields but you can leave some blank
+For some fields there will be a default value,
+If you enter '.', the field will be left blank.
+-----
+Common Name (eg: your user, host, or server name) [Easy-RSA CA]:cb-gke-k8s-tls
+
+CA creation complete and you may now import and sign cert requests.
+Your new CA certificate file for publishing is at:
+/Users/ram.dhakne/Documents/work/k8s/gcloud/easy-rsa/easyrsa3/pki/ca.crt
+
+
+# if using with DNS then use this:
+./easyrsa --subject-alt-name=DNS:*.cb-gke-demo.default.svc,DNS:*.cb-gke-demo.sewestus.com build-server-full couchbase-server nopass
+spec.dns value is : sewestus.com
+
+# if using without DNS (old method)
+# You may be asked to enter passphrase that was used to generate the CA
+
+$ ./easyrsa --subject-alt-name=DNS:*.cb-gke-k8s-tls.default.svc build-server-full couchbase-server nopass
+
+Using SSL: openssl OpenSSL 1.0.2p  14 Aug 2018
+Generating a 2048 bit RSA private key
+..................................................+++++
+.........................................................+++++
+writing new private key to '/Users/ram.dhakne/Documents/work/k8s/gcloud/easy-rsa/easyrsa3/pki/private/couchbase-server.key.o8DoOo42GM'
+-----
+Using configuration from /Users/ram.dhakne/Documents/work/k8s/gcloud/easy-rsa/easyrsa3/pki/safessl-easyrsa.cnf
+Enter pass phrase for /Users/ram.dhakne/Documents/work/k8s/gcloud/easy-rsa/easyrsa3/pki/private/ca.key:
+Check that the request matches the signature
+Signature ok
+The Subject's Distinguished Name is as follows
+commonName            :ASN.1 12:'couchbase-server'
+Certificate is to be certified until Mar 13 16:52:49 2022 GMT (1080 days)
+
+Write out database with 1 new entries
+Data Base Updated
+
+$ cp pki/private/couchbase-server.key pkey.key
+
+$ cp pki/issued/couchbase-server.crt chain.pem
+
+$ openssl rsa -in pkey.key -out pkey.key.der -outform DER
+writing RSA key
+
+$ openssl rsa -in pkey.key.der -inform DER -out pkey.key -outform PEM
+writing RSA key
+
+# for default namespace
+kubectl create secret generic couchbase-server-tls --from-file chain.pem --from-file pkey.key
+kubectl create secret generic couchbase-operator-tls --from-file pki/ca.crt 
+
+# for non-default namespace, say namespace 'k8s'
+kubectl create secret generic couchbase-server-tls --from-file chain.pem --from-file pkey.key --namespace k8s
+kubectl create secret generic couchbase-operator-tls --from-file pki/ca.crt --namespace k8s
