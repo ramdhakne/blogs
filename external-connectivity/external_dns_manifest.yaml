@@ -61,6 +61,6 @@ spec:
         - --txt-owner-id=/hostedzone/Z3DZIN7IGV30FY
         env:
         - name: AWS_ACCESS_KEY
-          value: "AKIAIMDV2J3JZ3KBTTVA"
+          value: ""
         - name: AWS_SECRET_ACCESS_KEY
-          value: "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"
+          value: ""
