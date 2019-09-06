@@ -33,6 +33,15 @@ apt-get -y update
 apt-get -y install libcouchbase-dev build-essential python-dev python-pip
 pip install git+http://github.com/couchbase/couchbase-python-client@2.5.4
 wget !file[https://raw.githubusercontent.com/ramdhakne/blogs/master/external-connectivity/assets/app_pod.yaml]
+
+# Install java 8 (1.8) for kafka connector
+
+apt-get -y -q install software-properties-common htop
+add-apt-repository ppa:openjdk-r/ppa
+apt-get update
+apt-get install openjdk-8-jre
+java -version
+
 ```
 
 ### 1. App pod in same namespace
